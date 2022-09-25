@@ -64,7 +64,7 @@
 
 	const initialiseTimeClickHandler = () => {
 		document.body.addEventListener('click', (e) => {
-			if (!e.target.matches('time')) {
+			if (!e.target || !e.target.closest('time')) {
 				return;
 			}
 

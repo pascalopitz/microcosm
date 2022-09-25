@@ -1,9 +1,8 @@
 (function (w, d, $, undefined) {
-  'use strict';
 
-  w.simpleEditor = (function () {
+  class SimpleEditor {
 
-    var simpleEditor = function (options) {
+    constructor(options) {
       this.el = false;
       if (typeof options.el !== "undefined") {
         this.$el = typeof options.el == "string" ? $(options.el) : options.el;
@@ -21,9 +20,10 @@
       }
 
 
-      this.textarea = this.$el.find('textarea')[0];
+      this.textarea = this.el.querySelector('textarea');
 
-      this.form = this.$el.find('form');
+      this.$form = this.$el.find('form');
+      this.form = this.$form[0];
 
       this.bind();
 
@@ -31,11 +31,11 @@
     };
 
 
-    simpleEditor.prototype.nothingSelected = function () {
+    nothingSelected() {
       return this.el.selectionStart === this.el.selectionEnd;
     };
 
-    simpleEditor.prototype.getSelectionDetailsObject = function () {
+    getSelectionDetailsObject() {
 
 
       var text = this.textarea.value,
@@ -66,7 +66,7 @@
 
     };
 
-    simpleEditor.prototype.applyFormatting = function (text, tag) {
+    applyFormatting(text, tag) {
 
       // splits text into array by newlines and applies tag to each index of array.
       var lines = text.split(/\n/g);
@@ -77,7 +77,7 @@
       return lines.join('\n');
     };
 
-    simpleEditor.prototype.formattedTextWith = function (tag) {
+    formattedTextWith(tag) {
 
       var selection = this.getSelectionDetailsObject();
 
@@ -88,7 +88,7 @@
       return newText;
     };
 
-    simpleEditor.prototype.insertLinkWith = function (tag) {
+    insertLinkWith(tag) {
 
       var selection = this.getSelectionDetailsObject();
       var link, newText;
@@ -109,38 +109,38 @@
       return newText;
     };
 
-    simpleEditor.prototype.h1 = function () {
-      this.textarea.value = this.formattedTextWith("\n%s\n====");
+    h1() {
+      this.textarea.value = this.$formattedTextWith("\n%s\n====");
     };
 
-    simpleEditor.prototype.bold = function () {
-      this.textarea.value = this.formattedTextWith("**%s**");
+    bold() {
+      this.textarea.value = this.$formattedTextWith("**%s**");
     };
 
-    simpleEditor.prototype.italics = function () {
-      this.textarea.value = this.formattedTextWith("*%s*");
+    italics() {
+      this.textarea.value = this.$formattedTextWith("*%s*");
     };
 
-    simpleEditor.prototype.list = function () {
-      this.textarea.value = this.formattedTextWith("*%s");
+    list() {
+      this.textarea.value = this.$formattedTextWith("*%s");
     };
 
-    simpleEditor.prototype.quote = function () {
-      this.textarea.value = this.formattedTextWith("> %s");
+    quote() {
+      this.textarea.value = this.$formattedTextWith("> %s");
     };
 
-    simpleEditor.prototype.quoteAll = function () {
+    quoteAll() {
       this.textarea.value = this.applyFormatting(this.textarea.value, "> %s");
     };
 
-    simpleEditor.prototype.link = function () {
+    link() {
       var output = this.insertLinkWith("[%s](%s)");
       if (output) {
         this.textarea.value = output;
       }
     };
 
-    simpleEditor.prototype.image = function () {
+    image() {
 
       var output = this.insertLinkWith("![%s](%s)");
       if (output) {
@@ -149,7 +149,7 @@
     };
 
 
-    simpleEditor.prototype.fetchAttachments = function (options) {
+    fetchAttachments(options) {
 
       var ajaxOptions = {
         url: "",
@@ -158,20 +158,20 @@
 
       if (typeof options !== 'undefined' &&
         typeof options == 'object') {
-        ajaxOptions = $.extend({}, ajaxOptions, options);
+        ajaxOptions = Object.assign({}, ajaxOptions, options);
       }
 
       return $.ajax(ajaxOptions);
 
     };
 
-    simpleEditor.prototype.clearAttachmentGallery = function (e) {
-      this.$el.find('.reply-box-attachments-gallery').html("");
+    clearAttachmentGallery(e) {
+      this.el.querySelector('.reply-box-attachments-gallery').innerHTML = "";
       this.fileHandler.clear();
     };
 
 
-    simpleEditor.prototype.renderAttachmentGallery = function (files) {
+    renderAttachmentGallery(files) {
       var ul, li, img, a, span,
         recognised_file_exts = ['jpg', 'jpeg', 'gif', 'png', 'bmp'],
         gallery = this.$el.find('.reply-box-attachments-gallery');
@@ -261,7 +261,7 @@
     };
 
 
-    simpleEditor.prototype.removeAttachmentFile = function (e) {
+    removeAttachmentFile(e) {
       var self = $(e.currentTarget),
         parent = self.parent(),
         isSavedFile = !parent.data('new'),
@@ -275,11 +275,11 @@
             this.attachments_delete = [];
           }
 
-          var field_attachments_delete = this.form.find('input[name="attachments-delete"]');
+          var field_attachments_delete = this.$form.find('input[name="attachments-delete"]');
 
           if (field_attachments_delete.length < 1) {
             field_attachments_delete = $('<input name="attachments-delete" type="hidden"/>');
-            this.form.append(field_attachments_delete);
+            this.$form.append(field_attachments_delete);
           }
 
           var notAlreadyDeleted = this.attachments_delete.indexOf(fileToBeRemoved.attr('data-rel')) === -1;
@@ -301,7 +301,7 @@
     };
 
 
-    simpleEditor.prototype.toggleMarkdownPreview = function (e) {
+    toggleMarkdownPreview(e) {
       var preview_window = this.$el.find('.wmd-preview-wrapper'),
         button_bar = this.$el.find('.wmd-button-bar');
 
@@ -316,13 +316,13 @@
       }
     }
 
-    simpleEditor.prototype.handleCtrlEnter = function (e) {
+    handleCtrlEnter(e) {
       if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13)) {
-        this.form.find('input[type=submit]').click();
+        this.$form.find('input[type=submit]').click();
       }
     };
 
-    simpleEditor.prototype.bind = function () {
+    bind() {
 
       // create a new instance of markdown.editor.js
 
@@ -339,17 +339,17 @@
       if (typeof FileHandler !== 'undefined' && !this.no_attachments) {
 
         this.fileHandler = new FileHandler({
-          el: this.$el.find('.reply-box-attachments')[0],
+          el: this.el.querySelector('.reply-box-attachments'),
           dropzone: '.reply-box-drop-zone, .reply-box-attachments-gallery'
         });
         // this callback fires when dropped event fires and all files are collected
-        this.fileHandler.onDragged($.proxy(function (files) {
+        this.fileHandler.onDragged(files => {
           this.renderAttachmentGallery(files);
-        }, this));
+        });
 
-        this.fileHandler.onRemove($.proxy(function (files) {
+        this.fileHandler.onRemove(files => {
           this.renderAttachmentGallery(files);
-        }, this));
+        });
 
 
         // check for data-num-attachments attribute, if 1 or more
@@ -362,11 +362,11 @@
 
           this.fetchAttachments({
             url: this.$el.attr('data-source') + "attachments"
-          }).success($.proxy(function (response) {
+          }).success(response => {
             if (typeof response.data.attachments !== 'undefined') {
               this.renderAttachmentGallery(response.data.attachments.items);
             }
-          }, this));
+          });
 
         }
       }
@@ -376,7 +376,7 @@
       //   textcomplete   //
       //////////////////////
 
-      var subdomain = $('meta[name="subdomain"]').attr('content'),
+      var subdomain = document.querySelector('meta[name="subdomain"]').getAttribute('content'),
         static_url = subdomain,
         dataSource = subdomain + '/api/v1/profiles?disableBoiler&top=true&q=';
 
@@ -429,15 +429,15 @@
       ////////////////////////
       if (typeof FormValidator !== 'undefined') {
 
-        if (this.form.length > 0) {
+        if (this.$form.length > 0) {
           new FormValidator(
-            this.form[0],
+            this.form,
             {
               rules: {
                 'markdown': ['not_empty', 'maxlength']
               },
               tests: {
-                'maxlength': function (field) { var $field = $(field); return $field.val().length < parseInt($field.attr('maxlength'), 10); }
+                'maxlength': (field) => field.value.length < parseInt(field.getAttribute('maxlength'), 10)
               },
               error_messages: {
                 'markdown:not_empty': "* Cannot be empty",
@@ -452,19 +452,27 @@
       ////////////////////////
       //     bind events    //
       ////////////////////////
-      var events = [
+      const events = [
         ['reset', 'form', 'clearAttachmentGallery'],
         ['click', '.reply-box-attachments-gallery li span.remove', 'removeAttachmentFile'],
         ['keydown', 'textarea', 'handleCtrlEnter'],
         ['click', '.wmd-preview-button', 'toggleMarkdownPreview']
       ];
 
-      for (var i in events) {
-        this.$el.on(events[i][0], events[i][1], $.proxy(this[events[i][2]], this));
+      for (const event of events) {
+        const [eventType, srcSelector, handlerFunc] = event;
+
+        this.el.addEventListener(eventType, (e) => {
+          if (!e.target || !e.target.closest(srcSelector)) {
+            return false;
+          }
+
+          this[handlerFunc].call(this, e);
+        });
       }
     };
+  };
 
-    return simpleEditor;
-  })();
+  w.simpleEditor = SimpleEditor;
 
 })(window, document, jQuery);

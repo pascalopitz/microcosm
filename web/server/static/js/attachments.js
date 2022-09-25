@@ -199,7 +199,7 @@
         const [eventType, srcSelector, handlerFunc] = event;
 
         this.el.addEventListener(eventType, (e) => {
-          if (!e.target.matches(srcSelector)) {
+          if (!e.target || !e.target.closest(srcSelector)) {
             return false;
           }
 
